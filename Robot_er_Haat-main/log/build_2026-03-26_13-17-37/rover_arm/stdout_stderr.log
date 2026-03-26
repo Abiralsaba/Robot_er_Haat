@@ -1,0 +1,50 @@
+running egg_info
+creating build/rover_arm/rover_arm.egg-info
+writing build/rover_arm/rover_arm.egg-info/PKG-INFO
+writing dependency_links to build/rover_arm/rover_arm.egg-info/dependency_links.txt
+writing entry points to build/rover_arm/rover_arm.egg-info/entry_points.txt
+writing requirements to build/rover_arm/rover_arm.egg-info/requires.txt
+writing top-level names to build/rover_arm/rover_arm.egg-info/top_level.txt
+writing manifest file 'build/rover_arm/rover_arm.egg-info/SOURCES.txt'
+reading manifest file 'build/rover_arm/rover_arm.egg-info/SOURCES.txt'
+writing manifest file 'build/rover_arm/rover_arm.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/build/rover_arm/build
+creating /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/build/rover_arm/build/lib
+creating /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/build/rover_arm/build/lib/rover_arm
+copying rover_arm/arm_joy_controller.py -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/build/rover_arm/build/lib/rover_arm
+copying rover_arm/ik_visualizer.py -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/build/rover_arm/build/lib/rover_arm
+copying rover_arm/__init__.py -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/build/rover_arm/build/lib/rover_arm
+running install
+running install_lib
+creating /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/lib/python3.12/site-packages/rover_arm
+copying /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/build/rover_arm/build/lib/rover_arm/arm_joy_controller.py -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/lib/python3.12/site-packages/rover_arm
+copying /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/build/rover_arm/build/lib/rover_arm/ik_visualizer.py -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/lib/python3.12/site-packages/rover_arm
+copying /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/build/rover_arm/build/lib/rover_arm/__init__.py -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/lib/python3.12/site-packages/rover_arm
+byte-compiling /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/lib/python3.12/site-packages/rover_arm/arm_joy_controller.py to arm_joy_controller.cpython-312.pyc
+byte-compiling /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/lib/python3.12/site-packages/rover_arm/ik_visualizer.py to ik_visualizer.cpython-312.pyc
+byte-compiling /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/lib/python3.12/site-packages/rover_arm/__init__.py to __init__.cpython-312.pyc
+running install_data
+creating /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/ament_index
+creating /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/ament_index/resource_index
+creating /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/ament_index/resource_index/packages
+copying resource/rover_arm -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/ament_index/resource_index/packages
+copying package.xml -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm
+creating /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm/launch
+copying launch/display.launch.py -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm/launch
+copying launch/arm.launch.py -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm/launch
+copying launch/ik.launch.py -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm/launch
+copying launch/gazebo.launch.py -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm/launch
+creating /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm/urdf
+copying urdf/arm.urdf -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm/urdf
+creating /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm/rviz
+copying rviz/arm.rviz -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm/rviz
+creating /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm/config
+copying config/arm_controllers.yaml -> /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/share/rover_arm/config
+running install_egg_info
+Copying build/rover_arm/rover_arm.egg-info to /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/lib/python3.12/site-packages/rover_arm-1.0.0-py3.12.egg-info
+running install_scripts
+Installing arm_joy_controller script to /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/lib/rover_arm
+Installing ik_visualizer script to /home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/install/rover_arm/lib/rover_arm
+writing list of installed files to '/home/a81r/Documents/MARCH ROVER/Robot_er_Haat-main(1)/Robot_er_Haat-main/build/rover_arm/install.log'

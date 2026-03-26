@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>rover_arm</name>
+  <version>1.0.0</version>
+  <description>ROS 2 package for controlling the rover arm with joystick, RViz, and Gazebo.</description>
+  <maintainer email="user@todo.todo">User</maintainer>
+  <license>TODO: License declaration</license>
+
+  <!-- Core -->
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+
+  <!-- Robot description -->
+  <depend>robot_state_publisher</depend>
+  <depend>xacro</depend>
+
+  <!-- Joystick -->
+  <depend>joy</depend>
+
+  <!-- ros2_control -->
+  <depend>ros2_control</depend>
+  <depend>ros2_controllers</depend>
+  <depend>controller_manager</depend>
+
+  <!-- Gazebo -->
+  <depend>ros_gz_sim</depend>
+  <depend>gz_ros2_control</depend>
+
+  <!-- Visualization -->
+  <depend>rviz2</depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
