@@ -51,6 +51,13 @@
   <xacro:property name="rl4_thick"   value="0.018"/>
 
 
+  <link name="world"/>
+  <joint name="world_to_rover_deck" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0.355" rpy="0 0 0"/>
+  </joint>
+
   <!-- ================================================================
        BASE LINK  (rover mounting plate / turntable base)
        Box 0.20 × 0.20 × 0.05, mass 2.0 kg
@@ -79,7 +86,7 @@
   <!-- ================================================================
        JOINT 1 – BASE YAW
   ================================================================ -->
-  <joint name="joint_1_base_yaw" type="revolute">
+  <joint name="j0_base_yaw" type="revolute">
     <parent link="base_link"/>
     <child  link="robolink_1_disc"/>
     <origin xyz="0 0 0.05" rpy="0 0 0"/>
@@ -146,12 +153,12 @@
   <!-- ================================================================
        JOINT 2 – SHOULDER PITCH
   ================================================================ -->
-  <joint name="joint_2_shoulder_pitch" type="revolute">
+  <joint name="j1_shoulder_pitch" type="revolute">
     <parent link="vertical_mast"/>
     <child  link="robolink_2_disc"/>
     <origin xyz="0 0 0.060" rpy="0 0 0"/>
     <axis   xyz="0 1 0"/>
-    <limit  lower="-0.35" upper="2.60" effort="60" velocity="0.8"/>
+    <limit  lower="-1.57" upper="2.60" effort="60" velocity="0.8"/>
     <dynamics damping="1.0" friction="0.4"/>
   </joint>
 
@@ -213,7 +220,7 @@
   <!-- ================================================================
        JOINT 3 – ELBOW PITCH
   ================================================================ -->
-  <joint name="joint_3_elbow_pitch" type="revolute">
+  <joint name="j2_elbow_pitch" type="revolute">
     <parent link="upper_arm"/>
     <child  link="robolink_3_disc"/>
     <origin xyz="0.425 0 0" rpy="0 0 0"/>
@@ -277,12 +284,12 @@
   <!-- ================================================================
        JOINT 4 – WRIST ROLL
   ================================================================ -->
-  <joint name="joint_4_wrist_roll" type="revolute">
+  <joint name="j3_wrist_pitch" type="revolute">
     <parent link="forearm"/>
     <child  link="robolink_4_disc"/>
     <origin xyz="0.470 0 0" rpy="0 0 0"/>
-    <axis   xyz="1 0 0"/>
-    <limit  lower="-3.14159" upper="3.14159" effort="15" velocity="1.5"/>
+    <axis   xyz="0 1 0"/>
+    <limit  lower="-1.5708" upper="1.5708" effort="15" velocity="1.5"/>
     <dynamics damping="0.4" friction="0.15"/>
   </joint>
 
@@ -293,12 +300,12 @@
   -->
   <link name="robolink_4_disc">
     <visual>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
       <geometry><cylinder radius="0.04125" length="0.018"/></geometry>
       <material name="dark_grey"/>
     </visual>
     <collision>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
       <geometry><cylinder radius="0.04125" length="0.018"/></geometry>
     </collision>
     <inertial>
@@ -313,12 +320,12 @@
   <!-- ================================================================
        JOINT 5 – WRIST PITCH
   ================================================================ -->
-  <joint name="joint_5_wrist_pitch" type="revolute">
+  <joint name="j4_wrist_roll" type="revolute">
     <parent link="robolink_4_disc"/>
     <child  link="wrist_bracket"/>
     <origin xyz="0.018 0 0" rpy="0 0 0"/>
-    <axis   xyz="0 1 0"/>
-    <limit  lower="-1.5708" upper="1.5708" effort="10" velocity="1.5"/>
+    <axis   xyz="1 0 0"/>
+    <limit  lower="-3.14159" upper="3.14159" effort="10" velocity="1.5"/>
     <dynamics damping="0.4" friction="0.15"/>
   </joint>
 
@@ -500,10 +507,10 @@
   ================================================================ -->
   <ros2_control name="rover_arm_control" type="system">
     <hardware>
-      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+      <plugin>gz_ros2_control/GazeboSimSystem</plugin>
     </hardware>
 
-    <joint name="joint_1_base_yaw">
+    <joint name="j0_base_yaw">
       <command_interface name="position">
         <param name="min">-3.14159</param>
         <param name="max">3.14159</param>
@@ -513,7 +520,7 @@
       <state_interface name="effort"/>
     </joint>
 
-    <joint name="joint_2_shoulder_pitch">
+    <joint name="j1_shoulder_pitch">
       <command_interface name="position">
         <param name="min">-0.35</param>
         <param name="max">2.60</param>
@@ -523,7 +530,7 @@
       <state_interface name="effort"/>
     </joint>
 
-    <joint name="joint_3_elbow_pitch">
+    <joint name="j2_elbow_pitch">
       <command_interface name="position">
         <param name="min">-2.35</param>
         <param name="max">2.35</param>
@@ -533,7 +540,7 @@
       <state_interface name="effort"/>
     </joint>
 
-    <joint name="joint_4_wrist_roll">
+    <joint name="j3_wrist_pitch">
       <command_interface name="position">
         <param name="min">-3.14159</param>
         <param name="max">3.14159</param>
@@ -543,7 +550,7 @@
       <state_interface name="effort"/>
     </joint>
 
-    <joint name="joint_5_wrist_pitch">
+    <joint name="j4_wrist_roll">
       <command_interface name="position">
         <param name="min">-1.5708</param>
         <param name="max">1.5708</param>
@@ -570,7 +577,7 @@
   ================================================================ -->
   <transmission name="trans_joint_1">
     <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint_1_base_yaw">
+    <joint name="j0_base_yaw">
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor_1">
@@ -580,7 +587,7 @@
 
   <transmission name="trans_joint_2">
     <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint_2_shoulder_pitch">
+    <joint name="j1_shoulder_pitch">
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor_2">
@@ -590,7 +597,7 @@
 
   <transmission name="trans_joint_3">
     <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint_3_elbow_pitch">
+    <joint name="j2_elbow_pitch">
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor_3">
@@ -600,7 +607,7 @@
 
   <transmission name="trans_joint_4">
     <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint_4_wrist_roll">
+    <joint name="j3_wrist_pitch">
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor_4">
@@ -610,7 +617,7 @@
 
   <transmission name="trans_joint_5">
     <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint_5_wrist_pitch">
+    <joint name="j4_wrist_roll">
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
     <actuator name="motor_5">
@@ -630,13 +637,11 @@
 
 
   <!-- ================================================================
-       GAZEBO ROS2 CONTROL PLUGIN
+       GAZEBO ROS2 CONTROL PLUGIN (Harmonic)
   ================================================================ -->
   <gazebo>
-    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <robot_param>robot_description</robot_param>
-      <robot_param_node>robot_state_publisher</robot_param_node>
-      <parameters>arm_controllers.yaml</parameters>
+    <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find rover_arm)/config/arm_controllers.yaml</parameters>
     </plugin>
   </gazebo>
 
@@ -720,15 +725,7 @@
           <far>10.0</far>
         </clip>
       </camera>
-      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
-        <ros>
-          <namespace>/rover_arm</namespace>
-          <remapping>image_raw:=wrist_camera/image_raw</remapping>
-          <remapping>camera_info:=wrist_camera/camera_info</remapping>
-        </ros>
-        <camera_name>wrist_camera</camera_name>
-        <frame_name>camera_optical_frame</frame_name>
-      </plugin>
+      <!-- Camera ROS bridge plugin omitted for simpler Gazebo Harmonic migration -->
     </sensor>
   </gazebo>
 

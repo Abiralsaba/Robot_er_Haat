@@ -1,7 +1,0 @@
-Metadata-Version: 2.1
-Name: rover-arm
-Version: 1.0.0
-Summary: ROS 2 package for controlling the rover arm with a joystick.
-Maintainer: User
-Maintainer-email: user@todo.todo
-License: TODO: License declaration

@@ -31,6 +31,7 @@ setup(
     entry_points={
         'console_scripts': [
             'arm_joy_controller = rover_arm.arm_joy_controller:main',
+            'ik_visualizer = rover_arm.ik_visualizer:main',
         ],
     },
 )

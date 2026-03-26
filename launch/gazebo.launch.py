@@ -1,24 +1,15 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import (
-    DeclareLaunchArgument,
-    ExecuteProcess,
-    IncludeLaunchDescription,
-    RegisterEventHandler,
-)
+from launch.actions import ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 import xacro
-
 
 def generate_launch_description():
     pkg_share = get_package_share_directory('rover_arm')
     urdf_file = os.path.join(pkg_share, 'urdf', 'arm.urdf')
-    rviz_config_file = os.path.join(pkg_share, 'rviz', 'arm.rviz')
-    controllers_file = os.path.join(pkg_share, 'config', 'arm_controllers.yaml')
 
     # Process xacro
     robot_description_content = xacro.process_file(urdf_file).toxml()
@@ -28,32 +19,31 @@ def generate_launch_description():
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        name='robot_state_publisher',
         output='screen',
         parameters=[robot_description, {'use_sim_time': True}],
     )
 
+    # Gazebo Sim (Harmonic)
+    gazebo = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            os.path.join(get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')
+        ]),
+        launch_arguments={'gz_args': '-r empty.sdf --render-engine ogre'}.items()
+    )
+
     # Spawn the robot in Gazebo
     spawn_entity = Node(
-        package='gazebo_ros',
-        executable='spawn_entity.py',
-        name='spawn_entity',
+        package='ros_gz_sim',
+        executable='create',
         output='screen',
         arguments=[
+            '-name', 'rover_arm',
             '-topic', 'robot_description',
-            '-entity', 'rover_arm',
-            '-x', '0.0', '-y', '0.0', '-z', '0.5',
+            '-z', '0.5',
         ],
     )
 
-    # Gazebo (empty world)
-    gazebo = ExecuteProcess(
-        cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_factory.so',
-             '-s', 'libgazebo_ros_init.so'],
-        output='screen',
-    )
-
-    # Controller Manager — load and activate controllers after spawn
+    # Controller Manager — load and activate controllers
     load_joint_state_broadcaster = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'joint_state_broadcaster'],
@@ -65,7 +55,6 @@ def generate_launch_description():
         output='screen',
     )
 
-    # Chain: spawn → load joint_state_broadcaster → load arm_controller
     return LaunchDescription([
         gazebo,
         robot_state_publisher_node,
