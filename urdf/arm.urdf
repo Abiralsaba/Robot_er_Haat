@@ -1,0 +1,735 @@
+<?xml version="1.0"?>
+<robot name="rover_arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ================================================================
+       MATERIALS
+  ================================================================ -->
+  <material name="black_anodized"><color rgba="0.08 0.08 0.08 1.0"/></material>
+  <material name="white_pla"><color rgba="0.95 0.95 0.95 1.0"/></material>
+  <material name="orange_accent"><color rgba="1.0 0.4 0.0 1.0"/></material>
+  <material name="silver_alu"><color rgba="0.65 0.65 0.68 1.0"/></material>
+  <material name="dark_grey"><color rgba="0.25 0.25 0.25 1.0"/></material>
+  <material name="camera_black"><color rgba="0.05 0.05 0.05 1.0"/></material>
+
+  <!-- ================================================================
+       PROPERTIES
+       All arm-segment lengths are ADJUSTED so that the total
+       pivot-to-pivot distance through the motor-disc offset
+       matches the real measured values exactly.
+
+       Pivot-to-pivot targets (from user measurement):
+         shoulder → elbow   = 0.440 m
+         elbow    → wrist   = 0.485 m
+         wrist    → EE      = 0.285 m (gripper palm length)
+
+       Motor disc half-thickness offset = rl_thick / 2 = 0.015 m
+       So visual link length = target − 0.015 m
+  ================================================================ -->
+  <!-- Robolink motor disc geometry -->
+  <xacro:property name="rl_radius"   value="0.055"/>
+  <xacro:property name="rl_thick"    value="0.030"/>
+
+  <!-- Vertical mast (base extrusion) -->
+  <xacro:property name="mast_h"      value="0.060"/>
+  <xacro:property name="mast_w"      value="0.040"/>
+
+  <!-- Upper arm visual length (0.440 − 0.015 = 0.425 m) -->
+  <xacro:property name="ua_len"      value="0.425"/>
+  <xacro:property name="ua_w"        value="0.040"/>
+
+  <!-- Forearm visual length (0.485 − 0.015 = 0.470 m) -->
+  <xacro:property name="fa_len"      value="0.470"/>
+  <xacro:property name="fa_w"        value="0.035"/>
+
+  <!-- Gripper palm -->
+  <xacro:property name="gp_len"      value="0.285"/>
+  <xacro:property name="gp_w"        value="0.180"/>
+  <xacro:property name="gp_h"        value="0.040"/>
+
+  <!-- Small wrist motor -->
+  <xacro:property name="rl4_radius"  value="0.04125"/>
+  <xacro:property name="rl4_thick"   value="0.018"/>
+
+
+  <!-- ================================================================
+       BASE LINK  (rover mounting plate / turntable base)
+       Box 0.20 × 0.20 × 0.05, mass 2.0 kg
+       Ixx = Iyy = (2/12)(0.04+0.0025) = 0.00708
+       Izz = (2/12)(0.04+0.04) = 0.01333
+  ================================================================ -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.025" rpy="0 0 0"/>
+      <geometry><box size="0.20 0.20 0.05"/></geometry>
+      <material name="black_anodized"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.025" rpy="0 0 0"/>
+      <geometry><box size="0.20 0.20 0.05"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0.025" rpy="0 0 0"/>
+      <mass value="2.0"/>
+      <inertia ixx="0.00708" ixy="0" ixz="0"
+               iyy="0.00708" iyz="0" izz="0.01333"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       JOINT 1 – BASE YAW
+  ================================================================ -->
+  <joint name="joint_1_base_yaw" type="revolute">
+    <parent link="base_link"/>
+    <child  link="robolink_1_disc"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    <axis   xyz="0 0 1"/>
+    <limit  lower="-3.14159" upper="3.14159" effort="30" velocity="1.0"/>
+    <dynamics damping="0.7" friction="0.3"/>
+  </joint>
+
+  <!-- Robolink motor 1 – cylinder axis Z (yaw disc)
+       Cylinder r=0.055 h=0.030, mass 0.6 kg
+       Ixx = Iyy = (0.6/12)(3·0.003025+0.0009) = 0.000499
+       Izz = (0.6/2)(0.003025) = 0.000908
+  -->
+  <link name="robolink_1_disc">
+    <visual>
+      <origin xyz="0 0 0.015" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.055" length="0.030"/></geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.015" rpy="0 0 0"/>
+      <geometry><cylinder radius="0.055" length="0.030"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0.015" rpy="0 0 0"/>
+      <mass value="0.6"/>
+      <inertia ixx="0.000499" ixy="0" ixz="0"
+               iyy="0.000499" iyz="0" izz="0.000908"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       VERTICAL MAST (fixed to yaw disc)
+       Box 0.04 × 0.04 × 0.06, mass 0.8 kg
+       Ixx = Iyy = (0.8/12)(0.0016+0.0036) = 0.000347
+       Izz = (0.8/12)(0.0016+0.0016) = 0.000213
+  ================================================================ -->
+  <joint name="joint_mast_fixed" type="fixed">
+    <parent link="robolink_1_disc"/>
+    <child  link="vertical_mast"/>
+    <origin xyz="0 0 0.030" rpy="0 0 0"/>
+  </joint>
+
+  <link name="vertical_mast">
+    <visual>
+      <origin xyz="0 0 0.030" rpy="0 0 0"/>
+      <geometry><box size="0.04 0.04 0.06"/></geometry>
+      <material name="black_anodized"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.030" rpy="0 0 0"/>
+      <geometry><box size="0.04 0.04 0.06"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0.030" rpy="0 0 0"/>
+      <mass value="0.8"/>
+      <inertia ixx="0.000347" ixy="0" ixz="0"
+               iyy="0.000347" iyz="0" izz="0.000213"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       JOINT 2 – SHOULDER PITCH
+  ================================================================ -->
+  <joint name="joint_2_shoulder_pitch" type="revolute">
+    <parent link="vertical_mast"/>
+    <child  link="robolink_2_disc"/>
+    <origin xyz="0 0 0.060" rpy="0 0 0"/>
+    <axis   xyz="0 1 0"/>
+    <limit  lower="-0.35" upper="2.60" effort="60" velocity="0.8"/>
+    <dynamics damping="1.0" friction="0.4"/>
+  </joint>
+
+  <!-- Robolink motor 2 – shoulder disc, cylinder axis along Y
+       Cylinder r=0.055 h=0.030, mass 0.6 kg  (rotated: axis → Y)
+       Ixx = 0.000499, Iyy = 0.000908, Izz = 0.000499
+  -->
+  <link name="robolink_2_disc">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.055" length="0.030"/></geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.055" length="0.030"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.6"/>
+      <inertia ixx="0.000499" ixy="0" ixz="0"
+               iyy="0.000908" iyz="0" izz="0.000499"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       UPPER ARM  (shoulder → elbow)
+       Visual length 0.425 m so pivot-to-pivot = 0.015 + 0.425 = 0.440 m ✓
+       Box 0.425 × 0.04 × 0.04, mass 1.8 kg
+       Ixx = (1.8/12)(0.0016+0.0016) = 0.000480
+       Iyy = Izz = (1.8/12)(0.180625+0.0016) = 0.027334
+  ================================================================ -->
+  <joint name="joint_upper_arm_fixed" type="fixed">
+    <parent link="robolink_2_disc"/>
+    <child  link="upper_arm"/>
+    <origin xyz="0.015 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="upper_arm">
+    <visual>
+      <origin xyz="0.2125 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.425 0.04 0.04"/></geometry>
+      <material name="black_anodized"/>
+    </visual>
+    <collision>
+      <origin xyz="0.2125 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.425 0.04 0.04"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.2125 0 0" rpy="0 0 0"/>
+      <mass value="1.8"/>
+      <inertia ixx="0.000480" ixy="0" ixz="0"
+               iyy="0.027334" iyz="0" izz="0.027334"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       JOINT 3 – ELBOW PITCH
+  ================================================================ -->
+  <joint name="joint_3_elbow_pitch" type="revolute">
+    <parent link="upper_arm"/>
+    <child  link="robolink_3_disc"/>
+    <origin xyz="0.425 0 0" rpy="0 0 0"/>
+    <axis   xyz="0 1 0"/>
+    <limit  lower="-2.35" upper="2.35" effort="40" velocity="1.0"/>
+    <dynamics damping="0.8" friction="0.3"/>
+  </joint>
+
+  <!-- Robolink motor 3 – elbow disc, same geometry as shoulder -->
+  <link name="robolink_3_disc">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.055" length="0.030"/></geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="0.055" length="0.030"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.6"/>
+      <inertia ixx="0.000499" ixy="0" ixz="0"
+               iyy="0.000908" iyz="0" izz="0.000499"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       FOREARM  (elbow → wrist)
+       Visual length 0.470 m so pivot-to-pivot = 0.015 + 0.470 = 0.485 m ✓
+       Box 0.470 × 0.035 × 0.035, mass 1.0 kg
+       Ixx = (1.0/12)(0.001225+0.001225) = 0.000204
+       Iyy = Izz = (1.0/12)(0.2209+0.001225) = 0.018510
+  ================================================================ -->
+  <joint name="joint_forearm_fixed" type="fixed">
+    <parent link="robolink_3_disc"/>
+    <child  link="forearm"/>
+    <origin xyz="0.015 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="forearm">
+    <visual>
+      <origin xyz="0.235 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.470 0.035 0.035"/></geometry>
+      <material name="black_anodized"/>
+    </visual>
+    <collision>
+      <origin xyz="0.235 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.470 0.035 0.035"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.235 0 0" rpy="0 0 0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.000204" ixy="0" ixz="0"
+               iyy="0.018510" iyz="0" izz="0.018510"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       JOINT 4 – WRIST ROLL
+  ================================================================ -->
+  <joint name="joint_4_wrist_roll" type="revolute">
+    <parent link="forearm"/>
+    <child  link="robolink_4_disc"/>
+    <origin xyz="0.470 0 0" rpy="0 0 0"/>
+    <axis   xyz="1 0 0"/>
+    <limit  lower="-3.14159" upper="3.14159" effort="15" velocity="1.5"/>
+    <dynamics damping="0.4" friction="0.15"/>
+  </joint>
+
+  <!-- Robolink motor 4 – wrist roll, small disc, cylinder axis along X
+       Cylinder r=0.04125 h=0.018, mass 0.3 kg
+       Ixx = (0.3/2)(0.001702) = 0.000255
+       Iyy = Izz = (0.3/12)(3·0.001702+0.000324) = 0.000136
+  -->
+  <link name="robolink_4_disc">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <geometry><cylinder radius="0.04125" length="0.018"/></geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <geometry><cylinder radius="0.04125" length="0.018"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.3"/>
+      <inertia ixx="0.000255" ixy="0" ixz="0"
+               iyy="0.000136" iyz="0" izz="0.000136"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       JOINT 5 – WRIST PITCH
+  ================================================================ -->
+  <joint name="joint_5_wrist_pitch" type="revolute">
+    <parent link="robolink_4_disc"/>
+    <child  link="wrist_bracket"/>
+    <origin xyz="0.018 0 0" rpy="0 0 0"/>
+    <axis   xyz="0 1 0"/>
+    <limit  lower="-1.5708" upper="1.5708" effort="10" velocity="1.5"/>
+    <dynamics damping="0.4" friction="0.15"/>
+  </joint>
+
+  <!-- Wrist bracket (short aluminium link)
+       Box 0.08 × 0.03 × 0.03, mass 0.15 kg
+       Ixx = (0.15/12)(0.0009+0.0009) = 0.0000225
+       Iyy = Izz = (0.15/12)(0.0064+0.0009) = 0.0000913
+  -->
+  <link name="wrist_bracket">
+    <visual>
+      <origin xyz="0.04 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.08 0.03 0.03"/></geometry>
+      <material name="silver_alu"/>
+    </visual>
+    <collision>
+      <origin xyz="0.04 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.08 0.03 0.03"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.04 0 0" rpy="0 0 0"/>
+      <mass value="0.15"/>
+      <inertia ixx="0.0000225" ixy="0" ixz="0"
+               iyy="0.0000913" iyz="0" izz="0.0000913"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       GRIPPER PALM  (white 3D-printed parallel-jaw base)
+       Box 0.285 × 0.18 × 0.04, mass 0.25 kg
+       Ixx = (0.25/12)(0.0324+0.0016) = 0.000708
+       Iyy = (0.25/12)(0.081225+0.0016) = 0.001725
+       Izz = (0.25/12)(0.081225+0.0324) = 0.002367
+  ================================================================ -->
+  <joint name="joint_gripper_palm_fixed" type="fixed">
+    <parent link="wrist_bracket"/>
+    <child  link="gripper_palm"/>
+    <origin xyz="0.08 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="gripper_palm">
+    <visual>
+      <origin xyz="0.1425 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.285 0.18 0.04"/></geometry>
+      <material name="white_pla"/>
+    </visual>
+    <collision>
+      <origin xyz="0.1425 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.285 0.18 0.04"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.1425 0 0" rpy="0 0 0"/>
+      <mass value="0.25"/>
+      <inertia ixx="0.000708" ixy="0" ixz="0"
+               iyy="0.001725" iyz="0" izz="0.002367"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       LEFT FINGER  (prismatic jaw)
+       Box 0.07 × 0.022 × 0.045, mass 0.08 kg
+       Ixx = 0.0000167, Iyy = 0.0000462, Izz = 0.0000359
+  ================================================================ -->
+  <joint name="left_finger_joint" type="prismatic">
+    <parent link="gripper_palm"/>
+    <child  link="left_finger"/>
+    <origin xyz="0.285 0.07 0" rpy="0 0 0"/>
+    <axis   xyz="0 1 0"/>
+    <limit  lower="-0.04" upper="0.01" effort="10" velocity="0.15"/>
+    <dynamics damping="0.2" friction="0.08"/>
+  </joint>
+
+  <link name="left_finger">
+    <visual>
+      <origin xyz="0.035 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.07 0.022 0.045"/></geometry>
+      <material name="orange_accent"/>
+    </visual>
+    <collision>
+      <origin xyz="0.035 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.07 0.022 0.045"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.035 0 0" rpy="0 0 0"/>
+      <mass value="0.08"/>
+      <inertia ixx="0.0000167" ixy="0" ixz="0"
+               iyy="0.0000462" iyz="0" izz="0.0000359"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       RIGHT FINGER  (mimic of left finger, multiplier = −1)
+  ================================================================ -->
+  <joint name="right_finger_joint" type="prismatic">
+    <parent link="gripper_palm"/>
+    <child  link="right_finger"/>
+    <origin xyz="0.285 -0.07 0" rpy="0 0 0"/>
+    <axis   xyz="0 1 0"/>
+    <limit  lower="-0.01" upper="0.04" effort="10" velocity="0.15"/>
+    <dynamics damping="0.2" friction="0.08"/>
+    <mimic joint="left_finger_joint" multiplier="-1.0" offset="0"/>
+  </joint>
+
+  <link name="right_finger">
+    <visual>
+      <origin xyz="0.035 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.07 0.022 0.045"/></geometry>
+      <material name="orange_accent"/>
+    </visual>
+    <collision>
+      <origin xyz="0.035 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.07 0.022 0.045"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0.035 0 0" rpy="0 0 0"/>
+      <mass value="0.08"/>
+      <inertia ixx="0.0000167" ixy="0" ixz="0"
+               iyy="0.0000462" iyz="0" izz="0.0000359"/>
+    </inertial>
+  </link>
+
+
+  <!-- ================================================================
+       CAMERA LINK  (mounted on wrist bracket)
+       Box 0.03 × 0.03 × 0.02, mass 0.05 kg
+       Ixx = Iyy = (0.05/12)(0.0009+0.0004) = 0.0000054
+       Izz = (0.05/12)(0.0009+0.0009) = 0.0000075
+  ================================================================ -->
+  <joint name="joint_camera_fixed" type="fixed">
+    <parent link="wrist_bracket"/>
+    <child  link="camera_link"/>
+    <origin xyz="0.04 0 0.025" rpy="0 0 0"/>
+  </joint>
+
+  <link name="camera_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.03 0.03 0.02"/></geometry>
+      <material name="camera_black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.03 0.03 0.02"/></geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.05"/>
+      <inertia ixx="0.0000054" ixy="0" ixz="0"
+               iyy="0.0000054" iyz="0" izz="0.0000075"/>
+    </inertial>
+  </link>
+
+  <!-- Camera optical frame (Z forward, X right, Y down per REP-103) -->
+  <joint name="camera_optical_joint" type="fixed">
+    <parent link="camera_link"/>
+    <child  link="camera_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+  </joint>
+  <link name="camera_optical_frame"/>
+
+
+  <!-- ================================================================
+       END-EFFECTOR FRAME
+  ================================================================ -->
+  <joint name="ee_fixed" type="fixed">
+    <parent link="gripper_palm"/>
+    <child  link="end_effector"/>
+    <origin xyz="0.355 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="end_effector"/>
+
+
+  <!-- ================================================================
+       ros2_control HARDWARE INTERFACE
+       Uses gazebo_ros2_control for simulation
+  ================================================================ -->
+  <ros2_control name="rover_arm_control" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+
+    <joint name="joint_1_base_yaw">
+      <command_interface name="position">
+        <param name="min">-3.14159</param>
+        <param name="max">3.14159</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+
+    <joint name="joint_2_shoulder_pitch">
+      <command_interface name="position">
+        <param name="min">-0.35</param>
+        <param name="max">2.60</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+
+    <joint name="joint_3_elbow_pitch">
+      <command_interface name="position">
+        <param name="min">-2.35</param>
+        <param name="max">2.35</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+
+    <joint name="joint_4_wrist_roll">
+      <command_interface name="position">
+        <param name="min">-3.14159</param>
+        <param name="max">3.14159</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+
+    <joint name="joint_5_wrist_pitch">
+      <command_interface name="position">
+        <param name="min">-1.5708</param>
+        <param name="max">1.5708</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+
+    <joint name="left_finger_joint">
+      <command_interface name="position">
+        <param name="min">-0.04</param>
+        <param name="max">0.01</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+  </ros2_control>
+
+
+  <!-- ================================================================
+       TRANSMISSIONS  (one per actuated joint)
+  ================================================================ -->
+  <transmission name="trans_joint_1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_1_base_yaw">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_1">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="trans_joint_2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_2_shoulder_pitch">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_2">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="trans_joint_3">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_3_elbow_pitch">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_3">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="trans_joint_4">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_4_wrist_roll">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_4">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="trans_joint_5">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint_5_wrist_pitch">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_5">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="trans_left_finger">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="left_finger_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="motor_gripper">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+
+  <!-- ================================================================
+       GAZEBO ROS2 CONTROL PLUGIN
+  ================================================================ -->
+  <gazebo>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      <robot_param>robot_description</robot_param>
+      <robot_param_node>robot_state_publisher</robot_param_node>
+      <parameters>arm_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
+
+
+  <!-- ================================================================
+       GAZEBO MATERIAL COLORS  (Gazebo ignores URDF <material>)
+  ================================================================ -->
+  <gazebo reference="base_link">
+    <material>Gazebo/DarkGrey</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="robolink_1_disc">
+    <material>Gazebo/Grey</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="vertical_mast">
+    <material>Gazebo/DarkGrey</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="robolink_2_disc">
+    <material>Gazebo/Grey</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="upper_arm">
+    <material>Gazebo/DarkGrey</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="robolink_3_disc">
+    <material>Gazebo/Grey</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="forearm">
+    <material>Gazebo/DarkGrey</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="robolink_4_disc">
+    <material>Gazebo/Grey</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="wrist_bracket">
+    <material>Gazebo/Grey</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="gripper_palm">
+    <material>Gazebo/White</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="left_finger">
+    <material>Gazebo/Orange</material>
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="right_finger">
+    <material>Gazebo/Orange</material>
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+  <gazebo reference="camera_link">
+    <material>Gazebo/Black</material>
+    <selfCollide>false</selfCollide>
+  </gazebo>
+
+
+  <!-- ================================================================
+       GAZEBO CAMERA SENSOR  (optional depth camera on wrist)
+  ================================================================ -->
+  <gazebo reference="camera_link">
+    <sensor type="camera" name="wrist_camera">
+      <update_rate>30.0</update_rate>
+      <camera name="wrist_cam">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>10.0</far>
+        </clip>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>/rover_arm</namespace>
+          <remapping>image_raw:=wrist_camera/image_raw</remapping>
+          <remapping>camera_info:=wrist_camera/camera_info</remapping>
+        </ros>
+        <camera_name>wrist_camera</camera_name>
+        <frame_name>camera_optical_frame</frame_name>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+</robot>
